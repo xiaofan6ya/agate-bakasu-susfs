@@ -1,4 +1,4 @@
-name: Build Chopin BakaSU+SUSFS Kernel
+name: Build Chopin BakaSU+SUSFS Kernel v2
 
 on:
   workflow_dispatch:

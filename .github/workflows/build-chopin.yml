@@ -56,6 +56,9 @@ jobs:
           # CONFIG_CC_STACKPROTECTOR is not set
           CONFIG_CC_STACKPROTECTOR_NONE=y
           CONFIG_LOCALVERSION="-bakasu-susfs"
+          # Novatek NT36xxx touchscreen (chopin uses Novatek, not Goodix)
+          CONFIG_TOUCHSCREEN_NT36xxx_HOSTDL_SPI=y
+          CONFIG_TOUCHSCREEN_NVT_DEBUG_FS=y
           EOF
           echo "=== defconfig tail ==="
           tail -20 "$DC"

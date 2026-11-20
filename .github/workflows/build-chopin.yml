@@ -63,12 +63,11 @@ jobs:
           echo "=== defconfig tail ==="
           tail -20 "$DC"
 
-      - name: Patch Novatek pinctrl NULL crash
+      - name: Patch Novatek touch driver (skip pinctrl + guard)
         run: |
-          F=drivers/input/touchscreen/NT36672C/nt36xxx.c
-          # Guard pinctrl_put(NULL) on the err_gpio_config_failed path.
-          sed -i 's|^\tpinctrl_put(nt36672_pinctrl);|\tif (!IS_ERR_OR_NULL(nt36672_pinctrl))\n\t\tpinctrl_put(nt36672_pinctrl);|' "$F"
-          grep -n -A2 "err_pinctrl_failed:" "$F"
+          echo "cCA9ICJkcml2ZXJzL2lucHV0L3RvdWNoc2NyZWVuL05UMzY2NzJDL250MzZ4eHguYyIKd2l0aCBvcGVuKHAsIG5ld2xpbmU9IiIpIGFzIGY6CiAgICByYXcgPSBmLnJlYWQoKQpubCA9ICJcclxuIiBpZiAiXHJcbiIgaW4gcmF3IGVsc2UgIlxuIgpsaW5lcyA9IHJhdy5zcGxpdChubCkKCiMgMSkgRmluZCB0aGUgcGluY3RybC1nZXQgZmFpbHVyZSBibG9jaywgY2hhbmdlIGl0cyBnb3RvIHRvIHNraXBfcGluY3RybAppZHggPSBOb25lCmZvciBpLCBsIGluIGVudW1lcmF0ZShsaW5lcyk6CiAgICBpZiAiRmFpbGVkIHRvIGdldCBwaW5jdHJsIGhhbmRsZXIiIGluIGw6CiAgICAgICAgaWR4ID0gaQogICAgICAgIGJyZWFrCmFzc2VydCBpZHggaXMgbm90IE5vbmUsICJwaW5jdHJsIGVycm9yIGxvZyBub3QgZm91bmQiCmNoYW5nZWQgPSAwCmZvciBqIGluIHJhbmdlKGlkeCwgbWluKGlkeCArIDUsIGxlbihsaW5lcykpKToKICAgIGlmICJnb3RvIGVycl9ncGlvX2NvbmZpZ19mYWlsZWQ7IiBpbiBsaW5lc1tqXToKICAgICAgICBsaW5lc1tqXSA9IGxpbmVzW2pdLnJlcGxhY2UoImdvdG8gZXJyX2dwaW9fY29uZmlnX2ZhaWxlZDsiLCAiZ290byBza2lwX3BpbmN0cmw7IikKICAgICAgICBjaGFuZ2VkID0gMQogICAgICAgIGJyZWFrCmFzc2VydCBjaGFuZ2VkID09IDEsICJwaW5jdHJsIGdvdG8gcGF0Y2ggZmFpbGVkIgoKIyAyKSBpbnNlcnQgc2tpcF9waW5jdHJsIGxhYmVsIGJlZm9yZSBtdXRleF9pbml0KCZ0cy0+bG9jaykgaW4gcHJvYmUKZG9uZSA9IDAKZm9yIGksIGwgaW4gZW51bWVyYXRlKGxpbmVzKToKICAgIGlmICJtdXRleF9pbml0KCZ0cy0+bG9jayk7IiBpbiBsIGFuZCBpZHggPCBpIDwgaWR4ICsgNjA6CiAgICAgICAgbGluZXMuaW5zZXJ0KGksICJza2lwX3BpbmN0cmw6IikKICAgICAgICBkb25lID0gMQogICAgICAgIGJyZWFrCmFzc2VydCBkb25lID09IDEsICJsYWJlbCBpbnNlcnQgZmFpbGVkIgoKIyAzKSBndWFyZCBwaW5jdHJsX3B1dCBvbiB0aGUgc2hhcmVkIGVycm9yIHBhdGgKZG9uZSA9IDAKZm9yIGksIGwgaW4gZW51bWVyYXRlKGxpbmVzKToKICAgIGlmIGwuc3RyaXAoKSA9PSAicGluY3RybF9wdXQobnQzNjY3Ml9waW5jdHJsKTsiOgogICAgICAgIGluZGVudCA9IGxbOmxlbihsKSAtIGxlbihsLmxzdHJpcCgpKV0KICAgICAgICBsaW5lc1tpXSA9IGluZGVudCArICJpZiAoIUlTX0VSUl9PUl9OVUxMKG50MzY2NzJfcGluY3RybCkpIiArIG5sICsgaW5kZW50ICsgIlx0cGluY3RybF9wdXQobnQzNjY3Ml9waW5jdHJsKTsiCiAgICAgICAgZG9uZSA9IDEKICAgICAgICBicmVhawphc3NlcnQgZG9uZSA9PSAxLCAicGluY3RybF9wdXQgZ3VhcmQgZmFpbGVkIgoKb3BlbihwLCAidyIsIG5ld2xpbmU9IlxuIikud3JpdGUobmwuam9pbihsaW5lcykpCnByaW50KCJPSzogc2tpcF9waW5jdHJsICsgcGluY3RybF9wdXQgZ3VhcmQgYXBwbGllZCIpCg==" | base64 -d > /tmp/patch_touch.py
+          python3 /tmp/patch_touch.py
+          grep -n "skip_pinctrl" drivers/input/touchscreen/NT36672C/nt36xxx.c | head
 
       - name: Build kernel
         run: |

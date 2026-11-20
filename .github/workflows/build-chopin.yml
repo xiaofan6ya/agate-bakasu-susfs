@@ -63,6 +63,13 @@ jobs:
           echo "=== defconfig tail ==="
           tail -20 "$DC"
 
+      - name: Patch Novatek pinctrl NULL crash
+        run: |
+          F=drivers/input/touchscreen/NT36672C/nt36xxx.c
+          # Guard pinctrl_put(NULL) on the err_gpio_config_failed path.
+          sed -i 's|^\tpinctrl_put(nt36672_pinctrl);|\tif (!IS_ERR_OR_NULL(nt36672_pinctrl))\n\t\tpinctrl_put(nt36672_pinctrl);|' "$F"
+          grep -n -A2 "err_pinctrl_failed:" "$F"
+
       - name: Build kernel
         run: |
           export PATH="$PWD/clang/bin:$PATH"

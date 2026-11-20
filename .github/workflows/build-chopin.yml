@@ -1,4 +1,4 @@
-name: Build Chopin BakaSU+SUSFS Kernel v2
+name: Build Chopin BakaSU+SUSFS Kernel
 
 on:
   workflow_dispatch:
@@ -37,26 +37,26 @@ jobs:
           DC=arch/arm64/configs/chopin_defconfig
           # KSU/SUSFS options that agate uses; append to chopin defconfig
           cat >> "$DC" <<'EOF'
-CONFIG_KSU=y
-# CONFIG_KSU_TRACEPOINT_HOOK is not set
-# CONFIG_KSU_MANUAL_HOOK is not set
-CONFIG_KSU_SUSFS=y
-CONFIG_KSU_SUSFS_SUS_PATH=y
-CONFIG_KSU_SUSFS_SUS_MOUNT=y
-CONFIG_KSU_SUSFS_SUS_KSTAT=y
-CONFIG_KSU_SUSFS_SPOOF_UNAME=y
-CONFIG_KSU_SUSFS_ENABLE_LOG=y
-CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y
-CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
-CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
-CONFIG_KSU_SUSFS_SUS_MAP=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-# CONFIG_CC_STACKPROTECTOR_STRONG is not set
-# CONFIG_CC_STACKPROTECTOR is not set
-CONFIG_CC_STACKPROTECTOR_NONE=y
-CONFIG_LOCALVERSION="-bakasu-susfs"
-EOF
+          CONFIG_KSU=y
+          # CONFIG_KSU_TRACEPOINT_HOOK is not set
+          # CONFIG_KSU_MANUAL_HOOK is not set
+          CONFIG_KSU_SUSFS=y
+          CONFIG_KSU_SUSFS_SUS_PATH=y
+          CONFIG_KSU_SUSFS_SUS_MOUNT=y
+          CONFIG_KSU_SUSFS_SUS_KSTAT=y
+          CONFIG_KSU_SUSFS_SPOOF_UNAME=y
+          CONFIG_KSU_SUSFS_ENABLE_LOG=y
+          CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y
+          CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
+          CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
+          CONFIG_KSU_SUSFS_SUS_MAP=y
+          CONFIG_KALLSYMS=y
+          CONFIG_KALLSYMS_ALL=y
+          # CONFIG_CC_STACKPROTECTOR_STRONG is not set
+          # CONFIG_CC_STACKPROTECTOR is not set
+          CONFIG_CC_STACKPROTECTOR_NONE=y
+          CONFIG_LOCALVERSION="-bakasu-susfs"
+          EOF
           echo "=== defconfig tail ==="
           tail -20 "$DC"
 

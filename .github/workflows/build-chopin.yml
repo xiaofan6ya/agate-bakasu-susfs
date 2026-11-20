@@ -1,0 +1,83 @@
+name: Build Chopin BakaSU+SUSFS Kernel
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/susfs-2.3.4.14-port
+
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential bc bison flex libssl-dev libelf-dev \
+            python3 git curl wget zip zstd cpio lz4 device-tree-compiler
+
+      - name: Get Clang 15 (AOSP r547379)
+        run: |
+          mkdir -p clang
+          cd clang
+          wget -q --tries=3 "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main-kernel/clang-r547379.tar.gz" -O clang.tgz || \
+          wget -q --tries=3 "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main-kernel-2025/clang-r547379.tar.gz" -O clang.tgz
+          tar -xf clang.tgz
+          rm -f clang.tgz
+          echo "$PWD/bin" >> "$GITHUB_PATH"
+          ./bin/clang --version | head -1
+
+      - name: Inject KSU/SUSFS config into chopin defconfig
+        run: |
+          DC=arch/arm64/configs/chopin_defconfig
+          # KSU/SUSFS options that agate uses; append to chopin defconfig
+          cat >> "$DC" <<'EOF'
+CONFIG_KSU=y
+# CONFIG_KSU_TRACEPOINT_HOOK is not set
+# CONFIG_KSU_MANUAL_HOOK is not set
+CONFIG_KSU_SUSFS=y
+CONFIG_KSU_SUSFS_SUS_PATH=y
+CONFIG_KSU_SUSFS_SUS_MOUNT=y
+CONFIG_KSU_SUSFS_SUS_KSTAT=y
+CONFIG_KSU_SUSFS_SPOOF_UNAME=y
+CONFIG_KSU_SUSFS_ENABLE_LOG=y
+CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y
+CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
+CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
+CONFIG_KSU_SUSFS_SUS_MAP=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+# CONFIG_CC_STACKPROTECTOR_STRONG is not set
+# CONFIG_CC_STACKPROTECTOR is not set
+CONFIG_CC_STACKPROTECTOR_NONE=y
+CONFIG_LOCALVERSION="-bakasu-susfs"
+EOF
+          echo "=== defconfig tail ==="
+          tail -20 "$DC"
+
+      - name: Build kernel
+        run: |
+          export PATH="$PWD/clang/bin:$PATH"
+          for sym in CONFIG_KSU=y CONFIG_KSU_SUSFS=y CONFIG_THREAD_INFO_IN_TASK=y; do
+            echo "checking $sym"
+          done
+          make O=out ARCH=arm64 chopin_defconfig
+          grep -Fqx "CONFIG_KSU=y" out/.config
+          grep -Fqx "CONFIG_KSU_SUSFS=y" out/.config
+          echo "KSU config OK"
+          make -j$(nproc) O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 \
+            CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            KCFLAGS="-Wno-error=strict-prototypes -Wno-error=implicit-function-declaration" \
+            Image.gz
+          ls -lh out/arch/arm64/boot/Image.gz
+
+      - name: Upload kernel
+        uses: actions/upload-artifact@v4
+        with:
+          name: chopin-bakasu-susfs-Image
+          path: out/arch/arm64/boot/Image.gz

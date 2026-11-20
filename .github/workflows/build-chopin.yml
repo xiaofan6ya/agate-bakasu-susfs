@@ -58,7 +58,7 @@ jobs:
           CONFIG_LOCALVERSION="-bakasu-susfs"
           EOF
           # Add Novatek NT36672C touch driver to the TOUCH_LISTS
-          sed -i 's|CONFIG_TOUCHSCREEN_MTK_TOUCH="GT9886 GT9896S"|CONFIG_TOUCHSCREEN_MTK_TOUCH="GT9886 GT9896S NT36672C"|' "$DC"
+          sed -i 's|CONFIG_TOUCHSCREEN_MTK_TOUCH="GT9886 GT9896S"|CONFIG_TOUCHSCREEN_MTK_TOUCH="NT36672C"|' "$DC"
           grep CONFIG_TOUCHSCREEN_MTK_TOUCH "$DC"
           echo "=== defconfig tail ==="
           tail -20 "$DC"

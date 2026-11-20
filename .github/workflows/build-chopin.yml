@@ -56,10 +56,10 @@ jobs:
           # CONFIG_CC_STACKPROTECTOR is not set
           CONFIG_CC_STACKPROTECTOR_NONE=y
           CONFIG_LOCALVERSION="-bakasu-susfs"
-          # Novatek NT36xxx touchscreen (chopin uses Novatek, not Goodix)
-          CONFIG_TOUCHSCREEN_NT36xxx_HOSTDL_SPI=y
-          CONFIG_TOUCHSCREEN_NVT_DEBUG_FS=y
           EOF
+          # Add Novatek NT36672C touch driver to the TOUCH_LISTS
+          sed -i 's|CONFIG_TOUCHSCREEN_MTK_TOUCH="GT9886 GT9896S"|CONFIG_TOUCHSCREEN_MTK_TOUCH="GT9886 GT9896S NT36672C"|' "$DC"
+          grep CONFIG_TOUCHSCREEN_MTK_TOUCH "$DC"
           echo "=== defconfig tail ==="
           tail -20 "$DC"
 
@@ -78,6 +78,10 @@ jobs:
             KCFLAGS="-Wno-error=strict-prototypes -Wno-error=implicit-function-declaration" \
             Image.gz
           ls -lh out/arch/arm64/boot/Image.gz
+          # Verify Novatek touch driver actually got compiled in
+          echo "=== touch driver check ==="
+          gzip -dc out/arch/arm64/boot/Image.gz | strings | grep -m3 -iE "nvt_ts|NVT-ts" || { echo "ERROR: Novatek touch driver NOT in kernel!"; exit 3; }
+          echo "Touch driver OK"
 
       - name: Upload kernel
         uses: actions/upload-artifact@v4
